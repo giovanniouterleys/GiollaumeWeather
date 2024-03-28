@@ -1,0 +1,48 @@
+name: CI/CD
+
+env:
+  DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+  DOCKERHUB_KEY: ${{ secrets.DOCKER_KEY }}
+
+on:
+  push:
+    branches:
+      - dev
+  workflow_dispatch:
+    inputs:
+      deployProd:
+        description: 'Deploy to Prod? [true/false]'
+        required: true
+        default: 'false'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build
+        run: echo "Build steps go here"
+
+  deploy-dev:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/dev'
+    steps:
+      - uses: actions/checkout@v2
+      - name: Deploy to Dev
+        run: |
+          # Commandes pour déployer dans l'environnement de développement
+          echo "Deploying to Dev namespace with Argo CD"
+          # Exemple: argocd app sync myapp-dev --grpc-web
+
+  deploy-prod:
+    needs: build
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.deployProd == 'true' }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Manual Trigger for Prod Deployment
+        run: |
+          # Commandes pour déployer dans l'environnement de production
+          echo "Deploying to Prod namespace with Argo CD"
+          # Exemple: argocd app sync myapp-prod --grpc-web
